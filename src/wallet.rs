@@ -17,15 +17,15 @@ use {
 pub mod inscribe;
 pub mod transaction_builder;
 
-pub(crate) struct Wallet {
-  pub(crate) name: String,
-  pub(crate) no_sync: bool,
-  pub(crate) options: Options,
-  pub(crate) ord_url: Url,
+pub struct Wallet {
+  pub name: String,
+  pub no_sync: bool,
+  pub options: Options,
+  pub ord_url: Url,
 }
 
 impl Wallet {
-  pub(crate) fn bitcoin_client(&self) -> Result<Client> {
+  pub fn bitcoin_client(&self) -> Result<Client> {
     let client = check_version(self.options.bitcoin_rpc_client(Some(self.name.clone()))?)?;
 
     if !client.list_wallets()?.contains(&self.name) {
@@ -37,7 +37,7 @@ impl Wallet {
     Ok(client)
   }
 
-  pub(crate) fn ord_client(&self) -> Result<reqwest::blocking::Client> {
+  pub fn ord_client(&self) -> Result<reqwest::blocking::Client> {
     let mut headers = header::HeaderMap::new();
     headers.insert(
       header::ACCEPT,
@@ -91,7 +91,7 @@ impl Wallet {
     Ok(output_json)
   }
 
-  pub(crate) fn get_unspent_outputs(&self) -> Result<BTreeMap<OutPoint, TxOut>> {
+  pub fn get_unspent_outputs(&self) -> Result<BTreeMap<OutPoint, TxOut>> {
     let mut utxos = BTreeMap::new();
     utxos.extend(
       self
@@ -129,7 +129,7 @@ impl Wallet {
     Ok(utxos)
   }
 
-  pub(crate) fn get_output_sat_ranges(&self) -> Result<Vec<(OutPoint, Vec<(u64, u64)>)>> {
+  pub fn get_output_sat_ranges(&self) -> Result<Vec<(OutPoint, Vec<(u64, u64)>)>> {
     ensure!(
       self.has_sat_index()?,
       "ord index must be built with `--index-sats` to use `--sat`"
@@ -147,7 +147,7 @@ impl Wallet {
     Ok(output_sat_ranges)
   }
 
-  pub(crate) fn find_sat_in_outputs(
+  pub fn find_sat_in_outputs(
     &self,
     sat: Sat,
     utxos: &BTreeMap<OutPoint, TxOut>,
@@ -179,7 +179,7 @@ impl Wallet {
     )))
   }
 
-  pub(crate) fn inscription_exists(&self, inscription_id: InscriptionId) -> Result<bool> {
+  pub fn inscription_exists(&self, inscription_id: InscriptionId) -> Result<bool> {
     Ok(
       !self
         .ord_client()?
@@ -213,7 +213,7 @@ impl Wallet {
     Ok(serde_json::from_str(&response.text()?)?)
   }
 
-  pub(crate) fn get_inscriptions(&self) -> Result<BTreeMap<SatPoint, Vec<InscriptionId>>> {
+  pub fn get_inscriptions(&self) -> Result<BTreeMap<SatPoint, Vec<InscriptionId>>> {
     let mut inscriptions = BTreeMap::new();
     for output in self.get_unspent_outputs()?.keys() {
       for inscription in self.get_output(output)?.inscriptions {
@@ -227,11 +227,11 @@ impl Wallet {
     Ok(inscriptions)
   }
 
-  pub(crate) fn get_inscription_satpoint(&self, inscription_id: InscriptionId) -> Result<SatPoint> {
+  pub fn get_inscription_satpoint(&self, inscription_id: InscriptionId) -> Result<SatPoint> {
     Ok(self.get_inscription(inscription_id)?.satpoint)
   }
 
-  pub(crate) fn get_rune(
+  pub fn get_rune(
     &self,
     rune: Rune,
   ) -> Result<Option<(RuneId, RuneEntry, Option<InscriptionId>)>> {
@@ -254,7 +254,7 @@ impl Wallet {
     Ok(Some((rune_json.id, rune_json.entry, rune_json.parent)))
   }
 
-  pub(crate) fn get_runic_outputs(&self) -> Result<BTreeSet<OutPoint>> {
+  pub fn get_runic_outputs(&self) -> Result<BTreeSet<OutPoint>> {
     let mut runic_outputs = BTreeSet::new();
     for output in self.get_unspent_outputs()?.keys() {
       if !self.get_output(output)?.runes.is_empty() {
@@ -265,14 +265,14 @@ impl Wallet {
     Ok(runic_outputs)
   }
 
-  pub(crate) fn get_runes_balances_for_output(
+  pub fn get_runes_balances_for_output(
     &self,
     output: &OutPoint,
   ) -> Result<Vec<(SpacedRune, Pile)>> {
     Ok(self.get_output(output)?.runes)
   }
 
-  pub(crate) fn get_rune_balance_in_output(&self, output: &OutPoint, rune: Rune) -> Result<u128> {
+  pub fn get_rune_balance_in_output(&self, output: &OutPoint, rune: Rune) -> Result<u128> {
     Ok(
       self
         .get_runes_balances_for_output(output)?
@@ -288,7 +288,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn get_locked_outputs(&self) -> Result<BTreeSet<OutPoint>> {
+  pub fn get_locked_outputs(&self) -> Result<BTreeSet<OutPoint>> {
     #[derive(Deserialize)]
     pub(crate) struct JsonOutPoint {
       txid: bitcoin::Txid,
@@ -305,7 +305,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn get_parent_info(
+  pub fn get_parent_info(
     &self,
     parent: Option<InscriptionId>,
     utxos: &BTreeMap<OutPoint, TxOut>,
@@ -337,7 +337,7 @@ impl Wallet {
     }
   }
 
-  pub(crate) fn get_change_address(&self) -> Result<Address> {
+  pub fn get_change_address(&self) -> Result<Address> {
     Ok(
       self
         .bitcoin_client()?
@@ -347,7 +347,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn get_server_status(&self) -> Result<StatusJson> {
+  pub fn get_server_status(&self) -> Result<StatusJson> {
     let response = self
       .ord_client()?
       .get(self.ord_url.join("/status").unwrap())
@@ -360,19 +360,19 @@ impl Wallet {
     Ok(serde_json::from_str(&response.text()?)?)
   }
 
-  pub(crate) fn has_rune_index(&self) -> Result<bool> {
+  pub fn has_rune_index(&self) -> Result<bool> {
     Ok(self.get_server_status()?.rune_index)
   }
 
-  pub(crate) fn has_sat_index(&self) -> Result<bool> {
+  pub fn has_sat_index(&self) -> Result<bool> {
     Ok(self.get_server_status()?.sat_index)
   }
 
-  pub(crate) fn chain(&self) -> Chain {
+  pub fn chain(&self) -> Chain {
     self.options.chain()
   }
 
-  pub(crate) fn exists(&self) -> Result<bool> {
+  pub fn exists(&self) -> Result<bool> {
     Ok(
       self
         .options

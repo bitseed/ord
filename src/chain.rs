@@ -13,7 +13,7 @@ pub enum Chain {
 }
 
 impl Chain {
-  pub(crate) fn network(self) -> Network {
+  pub fn network(self) -> Network {
     match self {
       Self::Mainnet => Network::Bitcoin,
       Self::Testnet => Network::Testnet,
@@ -22,7 +22,7 @@ impl Chain {
     }
   }
 
-  pub(crate) fn default_rpc_port(self) -> u16 {
+  pub fn default_rpc_port(self) -> u16 {
     match self {
       Self::Mainnet => 8332,
       Self::Regtest => 18443,
@@ -31,14 +31,14 @@ impl Chain {
     }
   }
 
-  pub(crate) fn inscription_content_size_limit(self) -> Option<usize> {
+  pub fn inscription_content_size_limit(self) -> Option<usize> {
     match self {
       Self::Mainnet | Self::Regtest => None,
       Self::Testnet | Self::Signet => Some(1024),
     }
   }
 
-  pub(crate) fn first_inscription_height(self) -> u32 {
+  pub fn first_inscription_height(self) -> u32 {
     match self {
       Self::Mainnet => 767430,
       Self::Regtest => 0,
@@ -47,7 +47,7 @@ impl Chain {
     }
   }
 
-  pub(crate) fn first_rune_height(self) -> u32 {
+  pub fn first_rune_height(self) -> u32 {
     SUBSIDY_HALVING_INTERVAL
       * match self {
         Self::Mainnet => 4,
@@ -57,7 +57,7 @@ impl Chain {
       }
   }
 
-  pub(crate) fn jubilee_height(self) -> u32 {
+  pub fn jubilee_height(self) -> u32 {
     match self {
       Self::Mainnet => 824544,
       Self::Regtest => 110,
@@ -66,25 +66,25 @@ impl Chain {
     }
   }
 
-  pub(crate) fn genesis_block(self) -> Block {
+  pub fn genesis_block(self) -> Block {
     bitcoin::blockdata::constants::genesis_block(self.network())
   }
 
-  pub(crate) fn genesis_coinbase_outpoint(self) -> OutPoint {
+  pub fn genesis_coinbase_outpoint(self) -> OutPoint {
     OutPoint {
       txid: self.genesis_block().coinbase().unwrap().txid(),
       vout: 0,
     }
   }
 
-  pub(crate) fn address_from_script(
+  pub fn address_from_script(
     self,
     script: &Script,
   ) -> Result<Address, bitcoin::address::Error> {
     Address::from_script(script, self.network())
   }
 
-  pub(crate) fn join_with_data_dir(self, data_dir: &Path) -> PathBuf {
+  pub fn join_with_data_dir(self, data_dir: &Path) -> PathBuf {
     match self {
       Self::Mainnet => data_dir.to_owned(),
       Self::Testnet => data_dir.join("testnet3"),
