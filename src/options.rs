@@ -8,72 +8,72 @@ use {super::*, bitcoincore_rpc::Auth};
 ))]
 pub struct Options {
   #[arg(long, help = "Minify JSON output.")]
-  pub(crate) minify: bool,
+  pub minify: bool,
   #[arg(long, help = "Load Bitcoin Core data dir from <BITCOIN_DATA_DIR>.")]
-  pub(crate) bitcoin_data_dir: Option<PathBuf>,
+  pub bitcoin_data_dir: Option<PathBuf>,
   #[arg(long, help = "Authenticate to Bitcoin Core RPC with <RPC_PASS>.")]
-  pub(crate) bitcoin_rpc_pass: Option<String>,
+  pub bitcoin_rpc_pass: Option<String>,
   #[arg(long, help = "Authenticate to Bitcoin Core RPC as <RPC_USER>.")]
-  pub(crate) bitcoin_rpc_user: Option<String>,
+  pub bitcoin_rpc_user: Option<String>,
   #[arg(
     long = "chain",
     value_enum,
     default_value = "mainnet",
     help = "Use <CHAIN>."
   )]
-  pub(crate) chain_argument: Chain,
+  pub chain_argument: Chain,
   #[arg(long, help = "Load configuration from <CONFIG>.")]
-  pub(crate) config: Option<PathBuf>,
+  pub config: Option<PathBuf>,
   #[arg(long, help = "Load configuration from <CONFIG_DIR>.")]
-  pub(crate) config_dir: Option<PathBuf>,
+  pub config_dir: Option<PathBuf>,
   #[arg(long, help = "Load Bitcoin Core RPC cookie file from <COOKIE_FILE>.")]
-  pub(crate) cookie_file: Option<PathBuf>,
+  pub cookie_file: Option<PathBuf>,
   #[arg(long, help = "Store index in <DATA_DIR>.", default_value_os_t = Options::default_data_dir())]
-  pub(crate) data_dir: PathBuf,
+  pub data_dir: PathBuf,
   #[arg(
     long,
     help = "Set index cache to <DB_CACHE_SIZE> bytes. By default takes 1/4 of available RAM."
   )]
-  pub(crate) db_cache_size: Option<usize>,
+  pub db_cache_size: Option<usize>,
   #[arg(
     long,
     help = "Don't look for inscriptions below <FIRST_INSCRIPTION_HEIGHT>."
   )]
-  pub(crate) first_inscription_height: Option<u32>,
+  pub first_inscription_height: Option<u32>,
   #[arg(long, help = "Limit index to <HEIGHT_LIMIT> blocks.")]
-  pub(crate) height_limit: Option<u32>,
+  pub height_limit: Option<u32>,
   #[arg(long, help = "Use index at <INDEX>.")]
-  pub(crate) index: Option<PathBuf>,
+  pub index: Option<PathBuf>,
   #[arg(
     long,
     help = "Track location of runes. RUNES ARE IN AN UNFINISHED PRE-ALPHA STATE AND SUBJECT TO CHANGE AT ANY TIME."
   )]
-  pub(crate) index_runes: bool,
+  pub index_runes: bool,
   #[arg(long, help = "Track location of all satoshis.")]
-  pub(crate) index_sats: bool,
+  pub index_sats: bool,
   #[arg(long, help = "Keep sat index entries of spent outputs.")]
-  pub(crate) index_spent_sats: bool,
+  pub index_spent_sats: bool,
   #[arg(long, help = "Store transactions in index.")]
-  pub(crate) index_transactions: bool,
+  pub index_transactions: bool,
   #[arg(
     long,
     short,
     alias = "noindex_inscriptions",
     help = "Do not index inscriptions."
   )]
-  pub(crate) no_index_inscriptions: bool,
+  pub no_index_inscriptions: bool,
   #[arg(long, short, help = "Use regtest. Equivalent to `--chain regtest`.")]
-  pub(crate) regtest: bool,
+  pub regtest: bool,
   #[arg(long, help = "Connect to Bitcoin Core RPC at <RPC_URL>.")]
-  pub(crate) rpc_url: Option<String>,
+  pub rpc_url: Option<String>,
   #[arg(long, short, help = "Use signet. Equivalent to `--chain signet`.")]
-  pub(crate) signet: bool,
+  pub signet: bool,
   #[arg(long, short, help = "Use testnet. Equivalent to `--chain testnet`.")]
-  pub(crate) testnet: bool,
+  pub testnet: bool,
 }
 
 impl Options {
-  pub(crate) fn chain(&self) -> Chain {
+  pub fn chain(&self) -> Chain {
     if self.signet {
       Chain::Signet
     } else if self.regtest {
@@ -85,7 +85,7 @@ impl Options {
     }
   }
 
-  pub(crate) fn first_inscription_height(&self) -> u32 {
+  pub fn first_inscription_height(&self) -> u32 {
     if integration_test() {
       0
     } else {
@@ -95,7 +95,7 @@ impl Options {
     }
   }
 
-  pub(crate) fn first_rune_height(&self) -> u32 {
+  pub fn first_rune_height(&self) -> u32 {
     if integration_test() {
       0
     } else {
@@ -103,11 +103,11 @@ impl Options {
     }
   }
 
-  pub(crate) fn index_runes(&self) -> bool {
+  pub fn index_runes(&self) -> bool {
     self.index_runes && self.chain() != Chain::Mainnet
   }
 
-  pub(crate) fn rpc_url(&self, wallet_name: Option<String>) -> String {
+  pub fn rpc_url(&self, wallet_name: Option<String>) -> String {
     let base_url = self
       .rpc_url
       .clone()
@@ -119,7 +119,7 @@ impl Options {
     }
   }
 
-  pub(crate) fn cookie_file(&self) -> Result<PathBuf> {
+  pub fn cookie_file(&self) -> Result<PathBuf> {
     if let Some(cookie_file) = &self.cookie_file {
       return Ok(cookie_file.clone());
     }
@@ -147,11 +147,11 @@ impl Options {
       .expect("failed to retrieve data dir")
   }
 
-  pub(crate) fn data_dir(&self) -> PathBuf {
+  pub fn data_dir(&self) -> PathBuf {
     self.chain().join_with_data_dir(&self.data_dir)
   }
 
-  pub(crate) fn load_config(&self) -> Result<Config> {
+  pub fn load_config(&self) -> Result<Config> {
     match &self.config {
       Some(path) => Ok(serde_yaml::from_reader(File::open(path)?)?),
       None => match &self.config_dir {
@@ -187,7 +187,7 @@ impl Options {
     )
   }
 
-  pub(crate) fn auth(&self) -> Result<Auth> {
+  pub fn auth(&self) -> Result<Auth> {
     let config = self.load_config()?;
 
     let rpc_user = Options::derive_var(
@@ -212,7 +212,7 @@ impl Options {
     }
   }
 
-  pub(crate) fn bitcoin_rpc_client(&self, wallet: Option<String>) -> Result<Client> {
+  pub fn bitcoin_rpc_client(&self, wallet: Option<String>) -> Result<Client> {
     let rpc_url = self.rpc_url(wallet);
 
     let auth = self.auth()?;
