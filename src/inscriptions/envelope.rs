@@ -15,8 +15,8 @@ pub(crate) const PROTOCOL_ID: [u8; 3] = *b"ord";
 pub(crate) const BODY_TAG: [u8; 0] = [];
 
 type Result<T> = std::result::Result<T, script::Error>;
-type RawEnvelope = Envelope<Vec<Vec<u8>>>;
-pub(crate) type ParsedEnvelope = Envelope<Inscription>;
+pub type RawEnvelope = Envelope<Vec<Vec<u8>>>;
+pub type ParsedEnvelope = Envelope<Inscription>;
 
 #[derive(Default, PartialEq, Clone, Serialize, Deserialize, Debug, Eq)]
 pub struct Envelope<T> {
