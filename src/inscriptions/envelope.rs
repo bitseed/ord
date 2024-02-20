@@ -89,7 +89,7 @@ impl From<RawEnvelope> for ParsedEnvelope {
 }
 
 impl ParsedEnvelope {
-  pub(crate) fn from_transaction(transaction: &Transaction) -> Vec<Self> {
+  pub fn from_transaction(transaction: &Transaction) -> Vec<Self> {
     RawEnvelope::from_transaction(transaction)
       .into_iter()
       .map(|envelope| envelope.into())
@@ -98,7 +98,7 @@ impl ParsedEnvelope {
 }
 
 impl RawEnvelope {
-  pub(crate) fn from_transaction(transaction: &Transaction) -> Vec<Self> {
+  pub fn from_transaction(transaction: &Transaction) -> Vec<Self> {
     let mut envelopes = Vec::new();
 
     for (i, input) in transaction.input.iter().enumerate() {
