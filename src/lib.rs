@@ -107,7 +107,7 @@ mod config;
 mod decimal;
 mod fee_rate;
 pub mod index;
-mod inscriptions;
+pub mod inscriptions;
 mod object;
 mod options;
 pub mod outgoing;
