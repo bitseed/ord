@@ -13,3 +13,5 @@ RUN apt-get update && apt-get install -y openssl
 
 ENV RUST_BACKTRACE=1
 ENV RUST_LOG=info
+
+ENTRYPOINT ["/usr/local/bin/ord"]
