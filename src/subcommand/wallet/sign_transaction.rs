@@ -1,5 +1,7 @@
 use {super::*, base64::Engine, bitcoin::psbt::Psbt};
 
+const MAX_BURNA_MOUNT: f64 = 10000.0_f64;
+
 pub(super) fn sign_transaction(
   wallet: &Wallet,
   unsigned_transaction: Transaction,
@@ -39,7 +41,7 @@ pub(super) fn sign_transaction(
       .ok_or_else(|| anyhow!("unable to sign transaction"))?;
 
     (
-      wallet.bitcoin_client().send_raw_transaction(&signed_tx)?,
+      send_raw_transaction_ext(wallet, &signed_tx, None, Some(MAX_BURNA_MOUNT))?,
       psbt,
     )
   };
@@ -57,4 +59,34 @@ pub(super) fn sign_transaction(
   }
 
   Ok((txid, psbt, fee))
+}
+
+pub fn send_raw_transaction_ext<R: bitcoincore_rpc::RawTx>(
+  wallet: &Wallet,
+  tx: R,
+  maxfeerate: Option<f64>,
+  maxburnamount: Option<f64>
+) -> Result<bitcoin::Txid> {
+  let bitcoin_client = wallet.bitcoin_client();
+
+  // Prepare the parameters for the RPC call
+  let mut params = vec![tx.raw_hex().into()];
+
+  // Add maxfeerate and maxburnamount to the params if they are Some
+  if let Some(feerate) = maxfeerate {
+      params.push(serde_json::to_value(feerate).unwrap());
+  } else {
+      params.push(serde_json::to_value(0.10).unwrap());
+  }
+
+  if let Some(burnamount) = maxburnamount {
+      params.push(serde_json::to_value(burnamount).unwrap());
+  } else {
+      params.push(serde_json::to_value(0.0).unwrap());
+  }
+
+  // Make the RPC call
+  let tx_id: bitcoin::Txid = bitcoin_client.call("sendrawtransaction", &params)?;
+
+  Ok(tx_id)
 }
