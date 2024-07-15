@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Clone)]
-pub(crate) struct WalletConstructor {
+pub struct WalletConstructor {
   ord_client: reqwest::blocking::Client,
   name: String,
   no_sync: bool,
@@ -10,7 +10,7 @@ pub(crate) struct WalletConstructor {
 }
 
 impl WalletConstructor {
-  pub(crate) fn construct(
+  pub fn construct(
     name: String,
     no_sync: bool,
     settings: Settings,
@@ -44,7 +44,7 @@ impl WalletConstructor {
     .build()
   }
 
-  pub(crate) fn build(self) -> Result<Wallet> {
+  pub fn build(self) -> Result<Wallet> {
     let database = Wallet::open_database(&self.name, &self.settings)?;
 
     let bitcoin_client = {
@@ -181,7 +181,7 @@ impl WalletConstructor {
 
   fn get_locked_utxos(bitcoin_client: &Client) -> Result<BTreeMap<OutPoint, TxOut>> {
     #[derive(Deserialize)]
-    pub(crate) struct JsonOutPoint {
+    pub struct JsonOutPoint {
       txid: Txid,
       vout: u32,
     }
