@@ -31,7 +31,7 @@ define_table! { RUNE_TO_ETCHING, u128, EtchingEntryValue }
 define_table! { STATISTICS, u64, u64 }
 
 #[derive(Copy, Clone)]
-pub(crate) enum Statistic {
+pub enum Statistic {
   Schema = 0,
 }
 
@@ -48,7 +48,7 @@ impl From<Statistic> for u64 {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Maturity {
+pub enum Maturity {
   BelowMinimumHeight(u64),
   CommitNotFound,
   CommitSpent(Txid),
@@ -56,23 +56,23 @@ pub(crate) enum Maturity {
   Mature,
 }
 
-pub(crate) struct Wallet {
-  bitcoin_client: Client,
-  database: Database,
-  has_rune_index: bool,
-  has_sat_index: bool,
-  rpc_url: Url,
-  utxos: BTreeMap<OutPoint, TxOut>,
-  ord_client: reqwest::blocking::Client,
-  inscription_info: BTreeMap<InscriptionId, api::Inscription>,
-  output_info: BTreeMap<OutPoint, api::Output>,
-  inscriptions: BTreeMap<SatPoint, Vec<InscriptionId>>,
-  locked_utxos: BTreeMap<OutPoint, TxOut>,
-  settings: Settings,
+pub struct Wallet {
+  pub bitcoin_client: Client,
+  pub database: Database,
+  pub has_rune_index: bool,
+  pub has_sat_index: bool,
+  pub rpc_url: Url,
+  pub utxos: BTreeMap<OutPoint, TxOut>,
+  pub ord_client: reqwest::blocking::Client,
+  pub inscription_info: BTreeMap<InscriptionId, api::Inscription>,
+  pub output_info: BTreeMap<OutPoint, api::Output>,
+  pub inscriptions: BTreeMap<SatPoint, Vec<InscriptionId>>,
+  pub locked_utxos: BTreeMap<OutPoint, TxOut>,
+  pub settings: Settings,
 }
 
 impl Wallet {
-  pub(crate) fn get_wallet_sat_ranges(&self) -> Result<Vec<(OutPoint, Vec<(u64, u64)>)>> {
+  pub fn get_wallet_sat_ranges(&self) -> Result<Vec<(OutPoint, Vec<(u64, u64)>)>> {
     ensure!(
       self.has_sat_index,
       "ord index must be built with `--index-sats` to use `--sat`"
@@ -90,7 +90,7 @@ impl Wallet {
     Ok(output_sat_ranges)
   }
 
-  pub(crate) fn get_output_sat_ranges(&self, output: &OutPoint) -> Result<Vec<(u64, u64)>> {
+  pub fn get_output_sat_ranges(&self, output: &OutPoint) -> Result<Vec<(u64, u64)>> {
     ensure!(
       self.has_sat_index,
       "ord index must be built with `--index-sats` to see sat ranges"
@@ -107,7 +107,7 @@ impl Wallet {
     }
   }
 
-  pub(crate) fn find_sat_in_outputs(&self, sat: Sat) -> Result<SatPoint> {
+  pub fn find_sat_in_outputs(&self, sat: Sat) -> Result<SatPoint> {
     ensure!(
       self.has_sat_index,
       "ord index must be built with `--index-sats` to use `--sat`"
@@ -135,19 +135,19 @@ impl Wallet {
     )))
   }
 
-  pub(crate) fn bitcoin_client(&self) -> &Client {
+  pub fn bitcoin_client(&self) -> &Client {
     &self.bitcoin_client
   }
 
-  pub(crate) fn utxos(&self) -> &BTreeMap<OutPoint, TxOut> {
+  pub fn utxos(&self) -> &BTreeMap<OutPoint, TxOut> {
     &self.utxos
   }
 
-  pub(crate) fn locked_utxos(&self) -> &BTreeMap<OutPoint, TxOut> {
+  pub fn locked_utxos(&self) -> &BTreeMap<OutPoint, TxOut> {
     &self.locked_utxos
   }
 
-  pub(crate) fn lock_non_cardinal_outputs(&self) -> Result {
+  pub fn lock_non_cardinal_outputs(&self) -> Result {
     let inscriptions = self
       .inscriptions()
       .keys()
@@ -176,15 +176,15 @@ impl Wallet {
     Ok(())
   }
 
-  pub(crate) fn inscriptions(&self) -> &BTreeMap<SatPoint, Vec<InscriptionId>> {
+  pub fn inscriptions(&self) -> &BTreeMap<SatPoint, Vec<InscriptionId>> {
     &self.inscriptions
   }
 
-  pub(crate) fn inscription_info(&self) -> BTreeMap<InscriptionId, api::Inscription> {
+  pub fn inscription_info(&self) -> BTreeMap<InscriptionId, api::Inscription> {
     self.inscription_info.clone()
   }
 
-  pub(crate) fn inscription_exists(&self, inscription_id: InscriptionId) -> Result<bool> {
+  pub fn inscription_exists(&self, inscription_id: InscriptionId) -> Result<bool> {
     Ok(
       !self
         .ord_client
@@ -200,7 +200,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn get_parent_info(
+  pub fn get_parent_info(
     &self,
     parent: Option<InscriptionId>,
   ) -> Result<Option<ParentInfo>> {
@@ -232,7 +232,7 @@ impl Wallet {
     }
   }
 
-  pub(crate) fn get_runic_outputs(&self) -> Result<BTreeSet<OutPoint>> {
+  pub fn get_runic_outputs(&self) -> Result<BTreeSet<OutPoint>> {
     let mut runic_outputs = BTreeSet::new();
     for (output, info) in self.output_info.iter() {
       if !info.runes.is_empty() {
@@ -243,7 +243,7 @@ impl Wallet {
     Ok(runic_outputs)
   }
 
-  pub(crate) fn get_runes_balances_in_output(
+  pub fn get_runes_balances_in_output(
     &self,
     output: &OutPoint,
   ) -> Result<BTreeMap<SpacedRune, Pile>> {
@@ -257,7 +257,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn get_rune(
+  pub fn get_rune(
     &self,
     rune: Rune,
   ) -> Result<Option<(RuneId, RuneEntry, Option<InscriptionId>)>> {
@@ -280,7 +280,7 @@ impl Wallet {
     Ok(Some((rune_json.id, rune_json.entry, rune_json.parent)))
   }
 
-  pub(crate) fn get_change_address(&self) -> Result<Address> {
+  pub fn get_change_address(&self) -> Result<Address> {
     Ok(
       self
         .bitcoin_client
@@ -290,19 +290,19 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn has_sat_index(&self) -> bool {
+  pub fn has_sat_index(&self) -> bool {
     self.has_sat_index
   }
 
-  pub(crate) fn has_rune_index(&self) -> bool {
+  pub fn has_rune_index(&self) -> bool {
     self.has_rune_index
   }
 
-  pub(crate) fn chain(&self) -> Chain {
+  pub fn chain(&self) -> Chain {
     self.settings.chain()
   }
 
-  pub(crate) fn integration_test(&self) -> bool {
+  pub fn integration_test(&self) -> bool {
     self.settings.integration_test()
   }
 
@@ -316,7 +316,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn check_maturity(&self, rune: Rune, commit: &Transaction) -> Result<Maturity> {
+  pub fn check_maturity(&self, rune: Rune, commit: &Transaction) -> Result<Maturity> {
     Ok(
       if let Some(commit_tx) = self
         .bitcoin_client()
@@ -345,7 +345,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn wait_for_maturation(&self, rune: Rune) -> Result<batch::Output> {
+  pub fn wait_for_maturation(&self, rune: Rune) -> Result<batch::Output> {
     let Some(entry) = self.load_etching(rune)? else {
       bail!("no etching found");
     };
@@ -397,7 +397,7 @@ impl Wallet {
     self.send_etching(rune, &entry)
   }
 
-  pub(crate) fn send_etching(&self, rune: Rune, entry: &EtchingEntry) -> Result<batch::Output> {
+  pub fn send_etching(&self, rune: Rune, entry: &EtchingEntry) -> Result<batch::Output> {
     match self.bitcoin_client().send_raw_transaction(&entry.reveal) {
       Ok(txid) => txid,
       Err(err) => {
@@ -434,7 +434,7 @@ impl Wallet {
     Ok(descriptors)
   }
 
-  pub(crate) fn initialize_from_descriptors(
+  pub fn initialize_from_descriptors(
     name: String,
     settings: &Settings,
     descriptors: Vec<Descriptor>,
@@ -470,7 +470,7 @@ impl Wallet {
     Ok(())
   }
 
-  pub(crate) fn initialize(name: String, settings: &Settings, seed: [u8; 64]) -> Result {
+  pub fn initialize(name: String, settings: &Settings, seed: [u8; 64]) -> Result {
     Self::check_version(settings.bitcoin_rpc_client(None)?)?.create_wallet(
       &name,
       None,
@@ -549,7 +549,7 @@ impl Wallet {
     Ok(())
   }
 
-  pub(crate) fn check_version(client: Client) -> Result<Client> {
+  pub fn check_version(client: Client) -> Result<Client> {
     const MIN_VERSION: usize = 240000;
 
     let bitcoin_version = client.version()?;
@@ -573,7 +573,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn open_database(wallet_name: &String, settings: &Settings) -> Result<Database> {
+  pub fn open_database(wallet_name: &String, settings: &Settings) -> Result<Database> {
     let path = settings
       .data_dir()
       .join("wallets")
@@ -668,7 +668,7 @@ impl Wallet {
     Ok(database)
   }
 
-  pub(crate) fn save_etching(
+  pub fn save_etching(
     &self,
     rune: &Rune,
     commit: &Transaction,
@@ -692,7 +692,7 @@ impl Wallet {
     Ok(())
   }
 
-  pub(crate) fn load_etching(&self, rune: Rune) -> Result<Option<EtchingEntry>> {
+  pub fn load_etching(&self, rune: Rune) -> Result<Option<EtchingEntry>> {
     let rtx = self.database.begin_read()?;
 
     Ok(
@@ -703,7 +703,7 @@ impl Wallet {
     )
   }
 
-  pub(crate) fn clear_etching(&self, rune: Rune) -> Result {
+  pub fn clear_etching(&self, rune: Rune) -> Result {
     let wtx = self.database.begin_write()?;
 
     wtx.open_table(RUNE_TO_ETCHING)?.remove(rune.0)?;
@@ -712,7 +712,7 @@ impl Wallet {
     Ok(())
   }
 
-  pub(crate) fn pending_etchings(&self) -> Result<Vec<(Rune, EtchingEntry)>> {
+  pub fn pending_etchings(&self) -> Result<Vec<(Rune, EtchingEntry)>> {
     let rtx = self.database.begin_read()?;
 
     Ok(
