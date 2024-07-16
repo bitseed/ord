@@ -1,4 +1,4 @@
-use crate::{InscriptionId, SatPoint};
+use super::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Event {
@@ -7,7 +7,7 @@ pub enum Event {
     charms: u16,
     inscription_id: InscriptionId,
     location: Option<SatPoint>,
-    parent_inscription_id: Option<InscriptionId>,
+    parent_inscription_ids: Vec<InscriptionId>,
     sequence_number: u32,
   },
   InscriptionTransferred {
@@ -16,5 +16,29 @@ pub enum Event {
     new_location: SatPoint,
     old_location: SatPoint,
     sequence_number: u32,
+  },
+  RuneBurned {
+    amount: u128,
+    block_height: u32,
+    rune_id: RuneId,
+    txid: Txid,
+  },
+  RuneEtched {
+    block_height: u32,
+    rune_id: RuneId,
+    txid: Txid,
+  },
+  RuneMinted {
+    amount: u128,
+    block_height: u32,
+    rune_id: RuneId,
+    txid: Txid,
+  },
+  RuneTransferred {
+    amount: u128,
+    block_height: u32,
+    outpoint: OutPoint,
+    rune_id: RuneId,
+    txid: Txid,
   },
 }

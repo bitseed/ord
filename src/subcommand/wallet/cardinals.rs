@@ -1,4 +1,4 @@
-use {super::*, std::collections::BTreeSet};
+use super::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct CardinalUtxo {
@@ -7,18 +7,20 @@ pub struct CardinalUtxo {
 }
 
 pub(crate) fn run(wallet: Wallet) -> SubcommandResult {
-  let unspent_outputs = wallet.get_unspent_outputs()?;
+  let unspent_outputs = wallet.utxos();
 
   let inscribed_utxos = wallet
-    .get_inscriptions()?
+    .inscriptions()
     .keys()
     .map(|satpoint| satpoint.outpoint)
     .collect::<BTreeSet<OutPoint>>();
 
+  let runic_utxos = wallet.get_runic_outputs()?;
+
   let cardinal_utxos = unspent_outputs
     .iter()
     .filter_map(|(output, txout)| {
-      if inscribed_utxos.contains(output) {
+      if inscribed_utxos.contains(output) || runic_utxos.contains(output) {
         None
       } else {
         Some(CardinalUtxo {
