@@ -8,6 +8,8 @@ RUN cargo build --bin ord --release
 
 FROM debian:bookworm-slim
 
+RUN apt-get update && apt-get install -y libssl3
+
 COPY --from=builder /usr/src/ord/target/release/ord /usr/local/bin
 RUN apt-get update && apt-get install -y openssl
 
